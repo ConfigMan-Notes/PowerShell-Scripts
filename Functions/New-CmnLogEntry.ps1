@@ -1,4 +1,4 @@
-Function New-CmnLogEntry {
+function New-CmnLogEntry {
     <#
     .SYNOPSIS
         Writes log entry that can be read by CMTrace.exe
@@ -18,7 +18,7 @@ Function New-CmnLogEntry {
         Specifies the Component information. This could be the name of the function or thread, or whatever you like, to further help identify what is being logged.
 
     .PARAMETER logFile
-        File for writing logs to (default is c:\temp\eror.log).
+        File for writing logs to (default is C:\Windows\temp\error.log).
 
     .PARAMETER logEntries
         Set to $true to write to the log file. Otherwise, it will just be write-verbose (default is $false).
@@ -62,8 +62,8 @@ Function New-CmnLogEntry {
         [Parameter(Mandatory = $true, HelpMessage = 'Specifies the Component information. This could be the name of the function or thread, or whatever you like, to further help identify what is being logged.')]
         [String]$component,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'File for writing logs to (default is c:\temp\eror.log).')]
-        [String]$logFile = 'C:\Temp\Error.log',
+        [Parameter(Mandatory = $false, HelpMessage = 'File for writing logs to (default is C:\Windows\temp\error.log).')]
+        [String]$logFile = 'C:\Windows\temp\error.log',
 
         [Parameter(Mandatory = $false, HelpMessage = 'Set to $true to write to the log file. Otherwise, it will just be write-verbose (default is $false).')]
         [Boolean]$logEntries = $false,
