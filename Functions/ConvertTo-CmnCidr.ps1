@@ -41,7 +41,6 @@ Function ConvertTo-CmnCidr {
 	#>
  
     [CmdletBinding(ConfirmImpact = 'Low')]
-
     Param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, HelpMessage = 'IP Address in dotted decimal notation')]
         [string]$ipAddress,

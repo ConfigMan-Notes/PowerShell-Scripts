@@ -4,7 +4,10 @@ function New-CmnLogEntry {
         Writes log entry that can be read by CMTrace.exe
 
     .DESCRIPTION
-        If you set 'logEntries' to $true, it writes log entries to a file. If the file is larger then MaxFileSize, it will rename it to *yyyymmdd-HHmmss.log and start a new file. You can specify if it's an (1) informational, (2) warning, or (3) error message as well. It will also add time zone information, so if you have machines in multiple time zones, you can convert to UTC and make sure you know exactly when things happened.
+        If you set 'logEntries' to $true, it writes log entries to a file. If the file is larger then MaxFileSize, it will rename it to
+        *yyyymmdd-HHmmss.log and start a new file. You can specify if it's an (1) informational, (2) warning, or (3) error message as well.
+        It will also add time zone information, so if you have machines in multiple time zones, you can convert to UTC and make sure you know exactly
+        when things happened.
         
         Will always write the entry verbose for troubleshooting
 
