@@ -4,7 +4,8 @@ Function ConvertTo-CmnCidr {
         Converts IP address and subnet mask to a CIDR address
 
     .DESCRIPTION
-        Converts IP address and subnet mask in put to a CIDR address
+        Converts IP address and subnet mask in put to a CIDR address.
+        This function als requires New-CmnLogEntry
 
     .PARAMETER ipAddress
         IP Address in dotted decimal notation

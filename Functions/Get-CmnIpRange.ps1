@@ -1,10 +1,14 @@
 Function Get-CmnIpRange {
     <#
-    .SYNOPSIS 
+    .SYNOPSIS
+        Takes in an IP address in CIDR format and returns the subnet, minimum IP address, maximum IP address, and broadcast address
 
     .DESCRIPTION
+        Takes in an IP address in CIDR format and returns the subnet, minimum IP address, maximum IP address, and broadcast address.
+        This function also needs ConvertTo-CmnIpAddress, Get-CmnIpRange, and New-CmnLogEntry functions
         
-    .PARAMETER 
+    .PARAMETER subnet
+        This is the IP address in CIDR format (eg 192.168.23.55/20)
 
     .PARAMETER logFile
         File for writing logs to (default is C:\Windows\Temp\Error.log).
@@ -19,6 +23,11 @@ Function Get-CmnIpRange {
         Specifies the number of history log files to keep (default is 5).
 
     .EXAMPLE
+        Get-CmnIpRange -subnet '192.168.23.55/20'
+        Returns:
+        Subnet       Broadcast      Min          Max
+        ------       ---------      ---          ---
+        192.168.16.0 192.168.31.255 192.168.16.1 192.168.31.254
 
     .LINK
         http://configman-notes.com
@@ -131,3 +140,5 @@ Function Get-CmnIpRange {
         Return $obj
     }
 } #End Get-CmnIpRange
+
+Get-CmnIpRange -subnet '192.168.23.55/20'

@@ -5,6 +5,7 @@ Function ConvertTo-CmnIpAddress {
 
     .DESCRIPTION
         Converts binary IP address to dotted decimal notation
+        This function also requires New-CmnLogEntry
         
     .PARAMETER ipInBinary
         IP Address in binary
