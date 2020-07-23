@@ -10,7 +10,7 @@ Function ConvertTo-CmnIpAddress {
         IP Address in binary
 
     .PARAMETER logFile
-        File for writing logs to (default is c:\temp\eror.log).
+        File for writing logs to (default is C:\Windows\Temp\Error.log).
 
     .PARAMETER logEntries
         Set to $true to write to the log file. Otherwise, it will just be write-verbose (default is $false).
@@ -34,7 +34,7 @@ Function ConvertTo-CmnIpAddress {
         Email:	    Jim@ConfigMan-Notes
         Date:	    2018-12-26
         PSVer:	    2.0/3.0
-        Updated: 
+        Updated:    2020-07-23 Comments
         Version:    1.0.0		
 	#>
  
@@ -42,6 +42,7 @@ Function ConvertTo-CmnIpAddress {
 
     Param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, HelpMessage = 'IP Address (in Binary) to convert')]
+        [ValidatePattern('^[01]{32}')]
         [string]$ipInBinary,
 
         [Parameter(Mandatory = $false, HelpMessage = 'File for writing logs to (default is C:\Windows\Temp\Error.log).')]
@@ -67,6 +68,7 @@ Function ConvertTo-CmnIpAddress {
             maxLogHistory = $maxLogHistory;
         }
 
+        # Log variables
         New-CMNLogEntry -entry 'Starting Function' -type 1 @NewLogEntry
         New-CMNLogEntry -entry "ipAddress = $ipAddress" -type 1 @NewLogEntry
         New-CMNLogEntry -entry "ipInBinary = $ipInBinary" -type 1 @NewLogEntry
@@ -78,7 +80,7 @@ Function ConvertTo-CmnIpAddress {
 
     process {
         New-CMNLogEntry -entry 'Beginning process loop' -type 1 @NewLogEntry
-
+        # Create variable to store IP address
         $ip = @()
 
         New-CMNLogEntry -entry 'Looping throught to convert the numbers' -type 1 @NewLogEntry
@@ -98,6 +100,7 @@ Function ConvertTo-CmnIpAddress {
     }
 
     end {
+        # Done! Log and return result
         New-CMNLogEntry -entry "Returning $ip" -type 1 @NewLogEntry
         New-CMNLogEntry -entry 'Completing Function' -Type 1 @NewLogEntry
         Return $ip

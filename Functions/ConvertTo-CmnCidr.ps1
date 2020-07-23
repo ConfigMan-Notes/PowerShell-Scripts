@@ -50,10 +50,10 @@ Function ConvertTo-CmnCidr {
         [ValidatePattern('^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')]
         [String]$subnetMask,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'File for writing logs to (default is c:\temp\eror.log).')]
-        [String]$logFile = 'C:\Temp\Error.log',
+        [Parameter(Mandatory = $false, HelpMessage = 'File for writing logs to (default is C:\Windows\Temp\Error.log).')]
+        [String]$logFile = 'C:\Windows\Temp\Error.log',
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Set to $true to write to the log file. Otherwise, it will just be New-CMNLogEntry -Entry (default is $false).')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Set to $true to write to the log file. Otherwise, it will just be write-verbose (default is $false).')]
         [Boolean]$logEntries = $false,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Max size for the log (default is 5MB).')]

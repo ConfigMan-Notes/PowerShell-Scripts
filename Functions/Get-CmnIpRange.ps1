@@ -36,10 +36,11 @@ Function Get-CmnIpRange {
 
     Param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, HelpMessage = 'IP Subnet (using CIDR) to get range of')]
+        [ValidatePattern('^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/\d{1,2}$')]
         [String]$subnet,
 
         [Parameter(Mandatory = $false, HelpMessage = 'File for writing logs to (default is C:\Windows\Temp\Error.log).')]
-        [String]$logFile = 'C:\Temp\Error.log',
+        [String]$logFile = 'C:\Windows\Temp\Error.log',
 
         [Parameter(Mandatory = $false, HelpMessage = 'Set to $true to write to the log file. Otherwise, it will just be write-verbose (default is $false).')]
         [Boolean]$logEntries = $false,
@@ -64,6 +65,7 @@ Function Get-CmnIpRange {
         # Create a hashtable with your output info
         $returnHashTable = @{ }
 
+        # Log variables
         New-CmnLogEntry -entry 'Starting Function' -type 1 @NewLogEntry
         New-CmnLogEntry -entry "subnet = $subnet" -type 1 @NewLogEntry
         New-CmnLogEntry -entry "logFile = $logFile" -type 1 @NewLogEntry
