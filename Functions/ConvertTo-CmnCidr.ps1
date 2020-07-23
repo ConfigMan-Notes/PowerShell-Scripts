@@ -43,9 +43,11 @@ Function ConvertTo-CmnCidr {
     [CmdletBinding(ConfirmImpact = 'Low')]
     Param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, HelpMessage = 'IP Address in dotted decimal notation')]
+        [ValidatePattern('^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')]
         [string]$ipAddress,
         
         [Parameter(Mandatory = $true, HelpMessage = 'Subnet mask in dotted decimal notation')]
+        [ValidatePattern('^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')]
         [String]$subnetMask,
 
         [Parameter(Mandatory = $false, HelpMessage = 'File for writing logs to (default is c:\temp\eror.log).')]
@@ -71,6 +73,7 @@ Function ConvertTo-CmnCidr {
             maxLogHistory = $maxLogHistory;
         }
 
+        # Log variables
         New-CMNLogEntry -entry 'Starting Function' -type 1 @NewLogEntry
         New-CMNLogEntry -entry "ipAddress = $ipAddress" -type 1 @NewLogEntry
         New-CMNLogEntry -entry "subnetMask = $subnetMask" -type 1 @NewLogEntry
@@ -82,7 +85,7 @@ Function ConvertTo-CmnCidr {
 
     process {
         New-CMNLogEntry -entry 'Beginning process loop' -type 1 @NewLogEntry
-        
+        # Get each octet seperate
         $octets = $subnetMask -split "\." 
         $subnetInBinary = @()
 
@@ -118,6 +121,7 @@ Function ConvertTo-CmnCidr {
     }
 
     End {
+        # Done! Log and send back the results
         $results = "$ipAddress/$networkBits"
         New-CMNLogEntry -entry "Returning $results" -type 1 @NewLogEntry
         New-CMNLogEntry -entry 'Completing Function' -type 1 @NewLogEntry
