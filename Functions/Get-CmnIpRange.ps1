@@ -1,11 +1,11 @@
 Function Get-CmnIpRange {
     <#
     .SYNOPSIS
-        Takes in an IP address in CIDR format and returns the subnet, minimum IP address, maximum IP address, and broadcast address
+        Takes in an IP address in CIDR format and returns the subnet, first IP address, last IP address, and broadcast address
 
     .DESCRIPTION
         Takes in an IP address in CIDR format and returns the subnet, minimum IP address, maximum IP address, and broadcast address.
-        This function also needs ConvertTo-CmnIpAddress, Get-CmnIpRange, and New-CmnLogEntry functions
+        This function also needs ConvertTo-CmnIpAddress, and New-CmnLogEntry functions
         
     .PARAMETER subnet
         This is the IP address in CIDR format (eg 192.168.23.55/20)
@@ -89,7 +89,7 @@ Function Get-CmnIpRange {
         #Split IP and subnet 
         $IP = ($Subnet -split "\/")[0] 
         $SubnetBits = ($Subnet -split "\/")[1] 
-        #Convert IP into binary 
+        #Convert IP into binary. I know there are other ways to do this, but this is more fun!
         #Split IP into different octects and for each one, figure out the binary with leading zeros and add to the total 
         New-CmnLogEntry -entry "Converting $IP into binary." -type 1 @NewLogEntry
         $Octets = $IP -split "\." 
@@ -102,30 +102,37 @@ Function Get-CmnIpRange {
             $IPInBinary = $IPInBinary + $OctetInBinary 
             New-CmnLogEntry -entry "$Octet = $OctetInBinary" -type 1 @NewLogEntry
         } 
+        # Now, we have an array of 4 elements, each with 8 bits. Let's make them on 32 bit value
         $IPInBinary = $IPInBinary -join "" 
         New-CmnLogEntry -entry "$IP in binary is $IPInBinary" -type 1 @NewLogEntry
         New-CmnLogEntry -entry 'Time to get subnet value' -type 1 @NewLogEntry
         $HostBits = 32 - $SubnetBits 
+        # Now, we know how may bits are subnet, let's figure out how many of our IP address are in the network portion
         $NetworkIDInBinary = $IPInBinary.Substring(0, $SubnetBits) 
         $HostIDInBinary = $IPInBinary.Substring($SubnetBits, $HostBits)         
         $HostIDInBinary = $HostIDInBinary -replace "1", "0" 
-        #Work out all the host IDs in that subnet by cycling through $i from 1 up to max $HostIDInBinary (i.e. 1s stringed up to $HostBits) 
+        # Work out all the host IDs in that subnet by cycling through $i from 1 up to max $HostIDInBinary (i.e. 1s stringed up to $HostBits) 
         $iSubnet = [convert]::ToInt32($HostIDInBinary, 2)
         $iSubnetHostBinary = [convert]::toString($iSubnet, 2)
         $iSubnetInBinary = "$NetworkIDInBinary$("0" * ($HostIDInBinary.Length - $iSubnetHostBinary.Length) + $iSubnetHostBinary)"
+        # Let's log the subnet
         New-CmnLogEntry -entry "Subnet in binary is $iSubnetInBinary" -type 1 @NewLogEntry
         $imin = [convert]::ToInt32($HostIDInBinary, 2) + 1
         $iMinHostBinary = [convert]::ToString($imin, 2)
         $iMinInBinary = "$NetworkIDInBinary$("0" * ($HostIDInBinary.Length - $iMinHostBinary.Length) + $iMinHostBinary)"
+        # Let's log the first host address
         New-CmnLogEntry -entry "First Host Address in binary is $iMinInBinary" -type 1 @NewLogEntry
         $imax = [convert]::ToInt32(("1" * $HostBits), 2) - 1 
         $iMaxHostBinary = [Convert]::ToString($imax, 2)
         $iMaxInBinary = "$NetworkIDInBinary$("0" * ($HostIDInBinary.Length - $iMaxHostBinary.Length) + $iMaxHostBinary)"
+        # Let's log the last host address
         New-CmnLogEntry -entry "Last Host Address in binary is $iMaxHostBinary" -type 1 @NewLogEntry
         $iBroadcast = [convert]::ToInt32(("1" * $HostBits), 2)
         $iBroadcastHostBinary = [Convert]::ToString($iBroadcast, 2)
         $iBroadcastInBinary = "$NetworkIDInBinary$("0" * ($HostIDInBinary.Length - $iBroadcastHostBinary.Length) + $iBroadcastHostBinary)"
+        # Let's log the broadcast address
         New-CmnLogEntry -entry "Broadcast Address in binary is $iBroadcastInBinary" -type 1 @NewLogEntry
+        # Time to build the return hash table
         $returnHashTable.Add('Subnet', (ConvertTo-CmnIpAddress -ipInBinary $iSubnetInBinary -logFIle $logFile -logEntries $logEntries -maxLogSize $maxLogSize -maxLogHistory $maxLogHistory))
         $returnHashTable.Add('Min', (ConvertTo-CmnIpAddress -ipInBinary $iMinInBinary -logFIle $logFile -logEntries $logEntries -maxLogSize $maxLogSize -maxLogHistory $maxLogHistory))
         $returnHashTable.Add('Max', (ConvertTo-CmnIpAddress -ipInBinary $iMaxInBinary -logFIle $logFile -logEntries $logEntries -maxLogSize $maxLogSize -maxLogHistory $maxLogHistory))
@@ -133,6 +140,7 @@ Function Get-CmnIpRange {
     }
 
     End {
+        # Done! Log the results and return
         $obj = New-Object -TypeName PSObject -Property $returnHashTable
         $obj.PSObject.TypeNames.Insert(0, 'CMN.IpRange')
         New-CmnLogEntry -entry "Returning $obj" -type 1 @NewLogEntry
@@ -140,5 +148,3 @@ Function Get-CmnIpRange {
         Return $obj
     }
 } #End Get-CmnIpRange
-
-Get-CmnIpRange -subnet '192.168.23.55/20'
