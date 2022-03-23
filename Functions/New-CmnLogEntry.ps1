@@ -6,8 +6,8 @@ function New-CmnLogEntry {
     .DESCRIPTION
         If you set 'logEntries' to $true, it writes log entries to a file. If the file is larger then MaxFileSize, it will rename it to
         *yyyymmdd-HHmmss.log and start a new file. You can specify if it's an (1) informational, (2) warning, or (3) error message as well.
-        It will also add time zone information, so if you have machines in multiple time zones, you can convert to UTC and make sure you know exactly
-        when things happened.
+        It will also add time zone information, so if you have machines in multiple time zones, you can convert to UTC and make sure you know
+        exactly when things happened.
         
         Will always write the entry verbose for troubleshooting
 
@@ -119,7 +119,7 @@ function New-CmnLogEntry {
                 # Get the path for the log so we know where to search
                 $logPath = Split-Path -Path $logFile
                 # And we remove any extra rollover logs.
-                Get-ChildItem -Path $logPath -filter $logFileName | Where-Object { $_.Name -notin (Get-ChildItem -Path $logPath -Filter $logFileName | Sort-Object -Property LastWriteTime -Descending | Select-Object -First $maxLogHistory).name } | Remove-Item
+                Get-ChildItem -Path $logPath -Filter $logFileName | Where-Object { $_.Name -notin (Get-ChildItem -Path $logPath -Filter $logFileName | Sort-Object -Property LastWriteTime -Descending | Select-Object -First $maxLogHistory).name } | Remove-Item
             }
         }
         # Finally, we write the entry
