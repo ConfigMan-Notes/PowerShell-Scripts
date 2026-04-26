@@ -5,22 +5,28 @@ Function Get-CmnIpRange {
 
     .DESCRIPTION
         Takes in an IP address in CIDR format and returns the subnet, minimum IP address, maximum IP address, and broadcast address.
-        This function also needs ConvertTo-CmnIpAddress, and New-CmnLogEntry functions
+        This function also needs ConvertTo-CmnIpAddress, and New-CmnLogEntry @NewLogEntry -type 1 functions
         
     .PARAMETER subnet
         This is the IP address in CIDR format (eg 192.168.23.55/20)
 
     .PARAMETER logFile
-        File for writing logs to (default is C:\Windows\Temp\Error.log).
+        File for writing logs to (default is C:\Windows\Temp\Dell\<ScriptName>.log).
 
     .PARAMETER logEntries
         Set to $true to write to the log file. Otherwise, it will just be write-verbose (default is $false).
+
+    .PARAMETER component
+        This is a placeholder so you can use @NewLogEntry hash table in calling scripts
 
     .PARAMETER maxLogSize
         Max size for the log (default is 5MB).
 
     .PARAMETER maxLogHistory
         Specifies the number of history log files to keep (default is 5).
+
+    .PARAMETER WriteOutput
+        Write Output to screen also. Default is $false
 
     .EXAMPLE
         Get-CmnIpRange -subnet '192.168.23.55/20'
@@ -48,20 +54,33 @@ Function Get-CmnIpRange {
         [ValidatePattern('^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/\d{1,2}$')]
         [String]$subnet,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'File for writing logs to (default is C:\Windows\Temp\Error.log).')]
-        [String]$logFile = 'C:\Windows\Temp\Error.log',
+        [Parameter(Mandatory = $false, HelpMessage = 'File for writing logs to (default is C:\Windows\Temp\Dell\<ScriptName>.log).')]
+        [String]$logFile,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Set to $true to write to the log file. Otherwise, it will just be write-verbose (default is $false).')]
         [Boolean]$logEntries = $false,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'This is a placeholder so you can use @NewLogEntry hash table in calling scripts')]
+        [string]$component,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Max size for the log (default is 5MB).')]
         [Int]$maxLogSize = 5242880,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specifies the number of history log files to keep (default is 5).')]
-        [Int]$maxLogHistory = 5
+        [Int]$maxLogHistory = 5,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Writes output to screen also. Default is $false')]
+        [boolean]$writeOutput = $false
     )
 
     begin {
+        # Ensure we have log file name
+        if ($null -eq $logFile -or $logFile -eq '') {
+            $logPath = "$($env:WinDir)\Temp\"
+            $logName = (Split-Path -Path $PSCommandPath -Leaf).Replace('ps1', 'log')
+            $logFile = "$($logPath)$($logName)"
+        }
+ 
         #Build splat for log entries
         $NewLogEntry = @{
             LogFile       = $logFile;
@@ -75,23 +94,23 @@ Function Get-CmnIpRange {
         $returnHashTable = @{ }
 
         # Log variables
-        New-CmnLogEntry -entry 'Starting Function' -type 1 @NewLogEntry
-        New-CmnLogEntry -entry "subnet = $subnet" -type 1 @NewLogEntry
-        New-CmnLogEntry -entry "logFile = $logFile" -type 1 @NewLogEntry
-        New-CmnLogEntry -entry "logEntries = $logEntries" -type 1 @NewLogEntry
-        New-CmnLogEntry -entry "maxLogSize = $maxLogSize" -type 1 @NewLogEntry
-        New-CmnLogEntry -entry "maxLogHistory = $maxLogHistory" -type 1 @NewLogEntry
+        New-CmnLogEntry @NewLogEntry -type 1 -entry 'Starting Function'
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "subnet        = $subnet"
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "logFile       = $logFile"
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "logEntries    = $logEntries"
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "maxLogSize    = $maxLogSize"
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "maxLogHistory = $maxLogHistory"
     }
 
     process {
-        New-CmnLogEntry -entry 'Beginning process loop' -type 1 @NewLogEntry
+        New-CmnLogEntry @NewLogEntry -type 1 -entry 'Beginning process loop'
         
         #Split IP and subnet 
         $IP = ($Subnet -split "\/")[0] 
         $SubnetBits = ($Subnet -split "\/")[1] 
         #Convert IP into binary. I know there are other ways to do this, but this is more fun!
         #Split IP into different octects and for each one, figure out the binary with leading zeros and add to the total 
-        New-CmnLogEntry -entry "Converting $IP into binary." -type 1 @NewLogEntry
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "Converting $IP into binary."
         $Octets = $IP -split "\." 
         $IPInBinary = @() 
         foreach ($Octet in $Octets) { 
@@ -100,12 +119,12 @@ Function Get-CmnIpRange {
             #get length of binary string add leading zeros to make octet 
             $OctetInBinary = ("0" * (8 - ($OctetInBinary).Length) + $OctetInBinary) 
             $IPInBinary = $IPInBinary + $OctetInBinary 
-            New-CmnLogEntry -entry "$Octet = $OctetInBinary" -type 1 @NewLogEntry
+            New-CmnLogEntry @NewLogEntry -type 1 -entry "$Octet = $OctetInBinary"
         } 
         # Now, we have an array of 4 elements, each with 8 bits. Let's make them on 32 bit value
         $IPInBinary = $IPInBinary -join "" 
-        New-CmnLogEntry -entry "$IP in binary is $IPInBinary" -type 1 @NewLogEntry
-        New-CmnLogEntry -entry 'Time to get subnet value' -type 1 @NewLogEntry
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "$IP in binary is $IPInBinary"
+        New-CmnLogEntry @NewLogEntry -type 1 -entry 'Time to get subnet value'
         $HostBits = 32 - $SubnetBits 
         # Now, we know how may bits are subnet, let's figure out how many of our IP address are in the network portion
         $NetworkIDInBinary = $IPInBinary.Substring(0, $SubnetBits) 
@@ -116,35 +135,35 @@ Function Get-CmnIpRange {
         $iSubnetHostBinary = [convert]::toString($iSubnet, 2)
         $iSubnetInBinary = "$NetworkIDInBinary$("0" * ($HostIDInBinary.Length - $iSubnetHostBinary.Length) + $iSubnetHostBinary)"
         # Let's log the subnet
-        New-CmnLogEntry -entry "Subnet in binary is $iSubnetInBinary" -type 1 @NewLogEntry
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "Subnet in binary is $iSubnetInBinary"
         $imin = [convert]::ToInt32($HostIDInBinary, 2) + 1
         $iMinHostBinary = [convert]::ToString($imin, 2)
         $iMinInBinary = "$NetworkIDInBinary$("0" * ($HostIDInBinary.Length - $iMinHostBinary.Length) + $iMinHostBinary)"
         # Let's log the first host address
-        New-CmnLogEntry -entry "First Host Address in binary is $iMinInBinary" -type 1 @NewLogEntry
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "First Host Address in binary is $iMinInBinary"
         $imax = [convert]::ToInt32(("1" * $HostBits), 2) - 1 
         $iMaxHostBinary = [Convert]::ToString($imax, 2)
         $iMaxInBinary = "$NetworkIDInBinary$("0" * ($HostIDInBinary.Length - $iMaxHostBinary.Length) + $iMaxHostBinary)"
         # Let's log the last host address
-        New-CmnLogEntry -entry "Last Host Address in binary is $iMaxHostBinary" -type 1 @NewLogEntry
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "Last Host Address in binary is $iMaxHostBinary"
         $iBroadcast = [convert]::ToInt32(("1" * $HostBits), 2)
         $iBroadcastHostBinary = [Convert]::ToString($iBroadcast, 2)
         $iBroadcastInBinary = "$NetworkIDInBinary$("0" * ($HostIDInBinary.Length - $iBroadcastHostBinary.Length) + $iBroadcastHostBinary)"
         # Let's log the broadcast address
-        New-CmnLogEntry -entry "Broadcast Address in binary is $iBroadcastInBinary" -type 1 @NewLogEntry
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "Broadcast Address in binary is $iBroadcastInBinary"
         # Time to build the return hash table
-        $returnHashTable.Add('Subnet', (ConvertTo-CmnIpAddress -ipInBinary $iSubnetInBinary -logFIle $logFile -logEntries $logEntries -maxLogSize $maxLogSize -maxLogHistory $maxLogHistory))
-        $returnHashTable.Add('Min', (ConvertTo-CmnIpAddress -ipInBinary $iMinInBinary -logFIle $logFile -logEntries $logEntries -maxLogSize $maxLogSize -maxLogHistory $maxLogHistory))
-        $returnHashTable.Add('Max', (ConvertTo-CmnIpAddress -ipInBinary $iMaxInBinary -logFIle $logFile -logEntries $logEntries -maxLogSize $maxLogSize -maxLogHistory $maxLogHistory))
-        $returnHashTable.Add('Broadcast', (ConvertTo-CmnIpAddress -ipInBinary $iBroadcastInBinary -logFIle $logFile -logEntries $logEntries -maxLogSize $maxLogSize -maxLogHistory $maxLogHistory))
+        $returnHashTable.Add('Subnet', (ConvertTo-CmnIpAddress -ipInBinary $iSubnetInBinary @NewLogEntry).IPAddress)
+        $returnHashTable.Add('Min', (ConvertTo-CmnIpAddress -ipInBinary $iMinInBinary @NewLogEntry).IPAddress)
+        $returnHashTable.Add('Max', (ConvertTo-CmnIpAddress -ipInBinary $iMaxInBinary @NewLogEntry).IPAddress)
+        $returnHashTable.Add('Broadcast', (ConvertTo-CmnIpAddress -ipInBinary $iBroadcastInBinary @NewLogEntry).IPAddress)
     }
 
     End {
         # Done! Log the results and return
         $obj = New-Object -TypeName PSObject -Property $returnHashTable
-        $obj.PSObject.TypeNames.Insert(0, 'CMN.IpRange')
-        New-CmnLogEntry -entry "Returning $obj" -type 1 @NewLogEntry
-        New-CmnLogEntry -entry 'Completing Function' -type 1 @NewLogEntry
+        $obj.PSObject.TypeNames.Insert(0, 'Cmn.IpRange')
+        New-CmnLogEntry @NewLogEntry -type 1 -entry "Returning $obj"
+        New-CmnLogEntry @NewLogEntry -type 1 -entry 'Completing Function'
         Return $obj
     }
-} #End Get-CmnIpRange
+}
