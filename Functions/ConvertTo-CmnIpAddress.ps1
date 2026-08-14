@@ -39,12 +39,11 @@ Function ConvertTo-CmnIpAddress {
     .NOTES
         Author:	    Jim Parris
         Email:	    Jim@ConfigMan-Notes
+        Version:    1.2.0
         Date:	    2018-12-26
-        PSVer:	    2.0/3.0
-        Updated:    2020-07-23 Comments
-        Version:    1.0.0		
+        Updated:    2024-08-14 Logic fix - removed redundant variable assignment		
 	#>
- 
+  
     [CmdletBinding()]
 
     Param(
@@ -78,7 +77,7 @@ Function ConvertTo-CmnIpAddress {
             $logName = (Split-Path -Path $PSCommandPath -Leaf).Replace('ps1', 'log')
             $logFile = "$($logPath)$($logName)"
         }
- 
+  
         #Build splat for log entries
         $NewLogEntry = @{
             LogFile       = $logFile
@@ -130,6 +129,3 @@ Function ConvertTo-CmnIpAddress {
         Return $obj
     }
 }
-
-$results = ConvertTo-CmnIpAddress -ipInBinary '10000100101000101110011111111100' -writeOutput $true
-$results
