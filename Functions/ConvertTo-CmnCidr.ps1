@@ -4,8 +4,8 @@ Function ConvertTo-CmnCidr {
         Converts IP address and subnet mask to a CIDR address
 
     .DESCRIPTION
-        Converts IP address and subnet mask in put to a CIDR address.
-        This function als requires New-CmnLogEntry
+        Converts IP address and subnet mask to a CIDR address.
+        This function also requires New-CmnLogEntry
 
     .PARAMETER ipAddress
         IP Address in dotted decimal notation
@@ -39,12 +39,11 @@ Function ConvertTo-CmnCidr {
         http://configman-notes.com
 
     .NOTES
-        Author:	    Jim Parris
-        Email:	    Jim@ConfigMan-Notes
-        PSVer:	    2.0/3.0
-         Version:    1.2.0
-         Date:       2018-12-26
-         Updated:    2024-08-14 Fixed subnet mask validation logic to prevent Index Out Of Bounds errors on boundary cases (e.g., /32).
+        Author:   Jim Parris
+        Email:    Jim@ConfigMan-Notes.com
+        Version:  1.2.0
+        Date:     2018-12-26
+        Updated:  2024-08-14 Fixed subnet mask validation logic to prevent Index Out Of Bounds errors on boundary cases (e.g., /32).
 	#>
  
     [CmdletBinding(ConfirmImpact = 'Low')]
@@ -107,7 +106,7 @@ Function ConvertTo-CmnCidr {
 
     process {
         New-CmnLogEntry @NewLogEntry -type 1 -entry 'Beginning process loop'
-        # Get each octet seperate
+        # Get each octet separate
         $octets = $subnetMask -split '\.' 
         $subnetInBinary = @()
 
@@ -124,24 +123,21 @@ Function ConvertTo-CmnCidr {
         New-CMNLogEntry @NewLogEntry -type 1 -Entry "Subnet = $subnetInBinary"
 
         # Now, let's make sure it's a valid subnet mask
-        $networkBits = 0
-        for ($x = 0; $x -lt $subnetInBinary.Length; $x++) {
-            if ($subnetInBinary.Substring($x, 1) -eq '1') {
-                $networkBits++
-            } else {
-                # Found the first zero bit (or end of string), break the count loop
-                break
-            }
+        $x = 0
+        while ($x -lt 32 -and $subnetInBinary.Substring($x, 1) -eq '1') {
+            $x++
         }
+        $networkBits = $x
 
-        # Check remaining bits for validity (must all be '0'). We start checking from $x.
-        for ($i = $networkBits; $i -lt $subnetInBinary.Length; $i++) {
-            if ($subnetInBinary.Substring($i, 1) -ne '0') {
+        # OK, now we've got all the 1's, let's make sure the rest are 0's!
+        while ($x -lt 32) {
+            if ($subnetInBinary.Substring($x, 1) -ne '0') {
                 # No good, time to alert!
                 $errorMessage = "The mask $subnetMask is invalid"
                 New-CMNLogEntry @NewLogEntry -type 3 -entry $errorMessage
                 throw $errorMessage
-            }
+            } 
+            $x++ 
         }
     }
 

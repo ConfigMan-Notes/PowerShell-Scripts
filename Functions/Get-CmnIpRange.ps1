@@ -43,7 +43,7 @@ Function Get-CmnIpRange {
         Email:	    Jim@ConfigMan-Notes.com
         PSVer:	    3.0
         Version:    1.0.0		
-        Date:	    yyyy-mm-dd
+        Date:	    2018-12-26
         Updated:		
 	#>
  

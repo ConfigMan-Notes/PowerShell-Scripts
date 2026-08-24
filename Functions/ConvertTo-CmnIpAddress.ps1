@@ -38,7 +38,7 @@ Function ConvertTo-CmnIpAddress {
 
     .NOTES
         Author:	    Jim Parris
-        Email:	    Jim@ConfigMan-Notes
+        Email:	    Jim@ConfigMan-Notes.com
         Version:    1.2.0
         Date:	    2018-12-26
         Updated:    2024-08-14 Logic fix - removed redundant variable assignment		
